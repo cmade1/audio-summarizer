@@ -3,6 +3,8 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 require('dotenv').config();
+const fetch = require('node-fetch');
+const FormData = require('form-data');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -68,26 +70,89 @@ app.post('/api/upload-audio', upload.single('audio'), async (req, res) => {
   }
 });
 
-// Whisper API endpoint'i (şimdilik placeholder)
+// Whisper API endpoint'i (gerçek entegrasyon)
 app.post('/api/transcribe', async (req, res) => {
   try {
     const { filename } = req.body;
-    
     if (!filename) {
       return res.status(400).json({ error: 'Dosya adı gerekli' });
     }
+    const filePath = path.join(__dirname, 'uploads', filename);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Dosya bulunamadı' });
+    }
 
-    // TODO: OpenAI Whisper API entegrasyonu burada olacak
-    console.log('Transkripsiyon isteği:', filename);
-    
-    res.json({ 
-      message: 'Transkripsiyon endpoint\'i hazır',
-      filename: filename
+    const formData = new FormData();
+    formData.append('file', fs.createReadStream(filePath));
+    formData.append('model', 'whisper-1');
+    formData.append('language', 'tr');
+
+    const openaiRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        ...formData.getHeaders()
+      },
+      body: formData
     });
 
+    if (!openaiRes.ok) {
+      const errText = await openaiRes.text();
+      return res.status(500).json({ error: 'Whisper API hatası', details: errText });
+    }
+    const data = await openaiRes.json();
+    res.json({ transcript: data.text });
   } catch (error) {
     console.error('Transkripsiyon hatası:', error);
-    res.status(500).json({ error: 'Transkripsiyon hatası' });
+    res.status(500).json({ error: 'Transkripsiyon hatası', details: error.message });
+  }
+});
+app.post('/api/summarize', async (req, res) => {
+  try {
+    const { transcript } = req.body;
+    if (!transcript) {
+      return res.status(400).json({ error: 'Transkript gerekli' });
+    }
+
+    const systemPrompt = `
+Aşağıda bir toplantının yaziya dokulmus hali verilecek. Bu metni temel alarak toplantının özetini oluştur.
+Lütfen şu yapıya sadık kal:
+- Toplantı Başlığı
+- Toplantı Özeti
+- Karar Maddeleri
+- Aksiyon Maddeleri
+- Notlar
+
+Özetin dili sade, Türkçe ve kurumsal olmalı. Gereksiz tekrarlar çıkarılmalı, konu dışı sohbetler atlanmalı. Kısa ama anlamlı bir çıktı oluşturulmalı.
+    `.trim();
+
+    const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o', // veya 'gpt-4.0'/'gpt-4.1' erişimin varsa
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: transcript }
+        ],
+        temperature: 0.5
+      })
+    });
+
+    if (!openaiRes.ok) {
+      const errText = await openaiRes.text();
+      return res.status(500).json({ error: 'GPT-4 özetleme hatası', details: errText });
+    }
+
+    const data = await openaiRes.json();
+    const summary = data.choices?.[0]?.message?.content || '';
+    res.json({ summary });
+  } catch (error) {
+    console.error('Özetleme hatası:', error);
+    res.status(500).json({ error: 'Özetleme hatası', details: error.message });
   }
 });
 
