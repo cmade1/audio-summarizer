@@ -3,7 +3,7 @@ import { jsPDF } from "jspdf";
 
 function App() {
   const [isRecording, setIsRecording] = useState(false);
-  const [status, setStatus] = useState("Ready");
+  const [status, setStatus] = useState("Hazır");
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null); // Seçilen dosya
   const [recordedAudio, setRecordedAudio] = useState(null); // Kaydedilen ses dosyası
@@ -38,7 +38,7 @@ function App() {
 
   const processAudioFile = async (audioFile) => {
     setIsProcessing(true);
-    setStatus("Uploading and processing audio file...");
+    setStatus("Ses dosyası yükleniyor ve işleniyor...");
     setTranscript("");
     setSummary("");
 
@@ -47,26 +47,27 @@ function App() {
       formData.append("audio", audioFile, "recording.webm");
 
       // Tek endpoint!
-      const response = await fetch("http://localhost:3001/api/process-audio", {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
+      const response = await fetch(`${apiUrl}/api/process-audio`, {
         method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        setStatus(errorData.error || "Processing error");
-        throw new Error(errorData.details || "Processing error");
+        setStatus(errorData.error || "İşleme hatası");
+        throw new Error(errorData.details || "İşleme hatası");
       }
 
       const result = await response.json();
       setTranscript(result.transcript);
       setSummary(result.summary);
-      setStatus("Process completed!");
+      setStatus("İşlem tamamlandı!");
       setSelectedFile(null);
       setRecordedAudio(null);
     } catch (error) {
-      console.error("Processing error:", error);
-      setStatus("Error occurred during processing");
+      console.error("İşleme hatası:", error);
+      setStatus("İşleme sırasında bir hata oluştu");
     } finally {
       setIsProcessing(false);
     }
@@ -74,7 +75,7 @@ function App() {
 
   // Kaydı başlat
   const startRecording = async () => {
-    setStatus("Accessing microphone...");
+    setStatus("Mikrofona erişiliyor...");
     try {
       // Kullanıcıdan mikrofon izni al
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -93,26 +94,25 @@ function App() {
 
       mediaRecorder.onstart = () => {
         setIsRecording(true);
-        setStatus("Recording started");
+        setStatus("Kayıt başladı");
       };
 
       mediaRecorder.onstop = () => {
         setIsRecording(false);
-        setStatus("Recording stopped");
+        setStatus("Kayıt durdu");
         // Kayıt bitince tüm ses parçalarını birleştir
         const audioBlob = new Blob(audioChunksRef.current, {
           type: "audio/webm",
         });
-        console.log("Recorded audio Blob:", audioBlob);
 
         // Kaydedilen ses dosyasını sakla
         setRecordedAudio(audioBlob);
-        setStatus("Recording completed. Click 'Extract Summary' to process.");
+        setStatus("Kayıt tamamlandı. Özet çıkarmak için tıklayın.");
       };
 
       mediaRecorder.start();
     } catch (err) {
-      setStatus("Microphone access denied or error occurred");
+      setStatus("Mikrofon erişimi reddedildi veya bir hata oluştu");
       console.error(err);
     }
   };
@@ -121,7 +121,7 @@ function App() {
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
-      setStatus("Stopping recording...");
+      setStatus("Kayıt durduruluyor...");
     }
   };
 
@@ -133,7 +133,7 @@ function App() {
     doc.setFontSize(16);
 
     // Başlık - Türkçe karakterleri düzelt
-    const title = "Transcript"
+    const title = "Transkript"
       .replace(/ğ/g, "g")
       .replace(/Ğ/g, "G")
       .replace(/ü/g, "u")
@@ -182,7 +182,7 @@ function App() {
       yPosition += 9; // Satır aralığını artırdım
     });
 
-    doc.save("transcript.pdf");
+    doc.save("transkript.pdf");
   };
 
   const downloadSummaryAsPDF = () => {
@@ -193,7 +193,7 @@ function App() {
     doc.setFontSize(16);
 
     // Başlık - Türkçe karakterleri düzelt
-    const title = "Toplanti Ozeti"
+    const title = "Toplantı Özeti"
       .replace(/ğ/g, "g")
       .replace(/Ğ/g, "G")
       .replace(/ü/g, "u")
@@ -242,7 +242,7 @@ function App() {
       yPosition += 9; // Satır aralığını artırdım
     });
 
-    doc.save("summary.pdf");
+    doc.save("ozet.pdf");
   };
 
   return (
@@ -250,10 +250,10 @@ function App() {
       {/* Başlık */}
       <div className="mb-12 mt-8">
         <h1 className="text-4xl md:text-5xl font-bold text-white text-center">
-          Audio Summarizer
+          Ses Özetleyici
         </h1>
         <p className="text-gray-300 text-center mt-2 text-lg">
-          Transform your audio into intelligent summaries
+          Sesinizi akıllı özetlere dönüştürün
         </p>
       </div>
 
@@ -275,7 +275,7 @@ function App() {
             </svg>
         </button>
           <span className="text-white text-sm mt-2 font-medium">
-            Start Recording
+            Kaydı Başlat
           </span>
         </div>
 
@@ -295,7 +295,7 @@ function App() {
             </svg>
           </button>
           <span className="text-white text-sm mt-2 font-medium">
-            Stop Recording
+            Kaydı Durdur
           </span>
         </div>
       </div>
@@ -342,7 +342,7 @@ function App() {
               d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
             />
           </svg>
-          <span className="text-lg">Upload Audio File</span>
+          <span className="text-lg">Ses Dosyası Yükle</span>
         </label>
       </div>
 
@@ -351,14 +351,14 @@ function App() {
         <div className="mb-6 text-white flex flex-col items-center justify-center">
           <div className="bg-gray-800 bg-opacity-50 rounded-lg px-6 py-4 backdrop-blur-sm border border-gray-700">
             <p className="text-lg font-medium">
-              Selected file: {selectedFile.name}
+              Seçilen dosya: {selectedFile.name}
             </p>
             <button
               onClick={() => processAudioFile(selectedFile)}
               disabled={isProcessing}
               className="mt-3 px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg disabled:opacity-50 hover:bg-indigo-700 hover:cursor-pointer transition-all duration-200 shadow-md hover:shadow-lg"
             >
-              Extract Summary
+              Özet Çıkar
             </button>
           </div>
         </div>
@@ -368,13 +368,13 @@ function App() {
       {recordedAudio && (
         <div className="mb-6 text-white flex flex-col items-center justify-center">
           <div className="bg-gray-800 bg-opacity-50 rounded-lg px-6 py-4 backdrop-blur-sm border border-gray-700">
-            <p className="text-lg font-medium mb-2">Recording completed!</p>
+            <p className="text-lg font-medium mb-2">Kayıt tamamlandı!</p>
             <button
               onClick={() => processAudioFile(recordedAudio)}
               disabled={isProcessing}
               className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg disabled:opacity-50 hover:bg-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg"
             >
-              Extract Summary
+              Özet Çıkar
         </button>
           </div>
         </div>
@@ -382,13 +382,13 @@ function App() {
 
       {/* Durum Mesajı - Daha az dikkat çekici */}
       <div className="text-sm text-gray-400 font-medium mb-6 text-center">
-        Status: {status}
+        Durum: {status}
       </div>
 
       {isProcessing && (
         <div className="flex items-center gap-2 mt-4 text-white">
           <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-purple-600"></div>
-          <span>Processing...</span>
+          <span>İşleniyor...</span>
         </div>
       )}
 
@@ -399,7 +399,7 @@ function App() {
           {transcript && (
             <div className="w-full lg:flex-1 bg-white rounded-lg shadow-lg p-6">
               <h2 className="font-bold text-lg mb-4 text-gray-800">
-                Transcript
+                Transkript
               </h2>
               <div className="bg-gray-100 rounded p-4 h-64 overflow-y-auto">
                 <pre className="whitespace-pre-wrap text-gray-800 text-sm">
@@ -423,7 +423,7 @@ function App() {
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                <span>Download PDF</span>
+                <span>PDF İndir</span>
               </button>
             </div>
           )}
@@ -431,7 +431,7 @@ function App() {
           {/* Özet Kutusu */}
           {summary && (
             <div className="w-full lg:flex-1 bg-white rounded-lg shadow-lg p-6">
-              <h2 className="font-bold text-lg mb-4 text-gray-800">Summary</h2>
+              <h2 className="font-bold text-lg mb-4 text-gray-800">Özet</h2>
               <div className="bg-gray-100 rounded p-4 h-64 overflow-y-auto">
                 <pre className="whitespace-pre-wrap text-gray-800 text-sm">
                   {summary}
@@ -454,7 +454,7 @@ function App() {
                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                <span>Download PDF</span>
+                <span>PDF İndir</span>
               </button>
             </div>
           )}
