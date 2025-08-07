@@ -1,5 +1,9 @@
 import { useRef, useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
+import { formatTime } from "./utils/formatTime";
+import { downloadTranscriptAsPDF, downloadSummaryAsPDF } from "./utils/pdfHelpers";
+import StatusMessage from "./components/StatusMessage"
+import ProcessingSpinner from "./components/ProcessingSpinner"
 
 function App() {
   const [isRecording, setIsRecording] = useState(false);
@@ -28,15 +32,7 @@ function App() {
     return () => clearInterval(interval);
   }, [isRecording]);
 
-  // Saniyeyi dakika:saniye formatına çevir
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
+ 
   const processAudioFile = async (audioFile) => {
     setIsProcessing(true);
     setStatus("Ses dosyası yükleniyor ve işleniyor...");
@@ -128,126 +124,6 @@ function App() {
       mediaRecorderRef.current.stop();
       setStatus("Kayıt durduruluyor...");
     }
-  };
-
-  const downloadTranscriptAsPDF = () => {
-    const doc = new jsPDF();
-
-    // Türkçe karakterler için uygun font ayarları
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-
-    // Başlık - Türkçe karakterleri düzelt
-    const title = "Transkript"
-      .replace(/ğ/g, "g")
-      .replace(/Ğ/g, "G")
-      .replace(/ü/g, "u")
-      .replace(/Ü/g, "U")
-      .replace(/ş/g, "s")
-      .replace(/Ş/g, "S")
-      .replace(/ı/g, "i")
-      .replace(/İ/g, "I")
-      .replace(/ö/g, "o")
-      .replace(/Ö/g, "O")
-      .replace(/ç/g, "c")
-      .replace(/Ç/g, "C");
-
-    doc.text(title, 10, 20);
-
-    // İçerik için daha kalın font
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-
-    // Türkçe karakterleri düzgün göstermek için encoding ayarı
-    const turkishText = transcript
-      .replace(/ğ/g, "g")
-      .replace(/Ğ/g, "G")
-      .replace(/ü/g, "u")
-      .replace(/Ü/g, "U")
-      .replace(/ş/g, "s")
-      .replace(/Ş/g, "S")
-      .replace(/ı/g, "i")
-      .replace(/İ/g, "I")
-      .replace(/ö/g, "o")
-      .replace(/Ö/g, "O")
-      .replace(/ç/g, "c")
-      .replace(/Ç/g, "C");
-
-    // Metni satırlara böl - Türkçe karakterler için daha geniş alan
-    const lines = doc.splitTextToSize(turkishText, 180);
-
-    // Her satırı ayrı ayrı yaz
-    let yPosition = 35;
-    lines.forEach((line, index) => {
-      if (yPosition > 280) {
-        doc.addPage();
-        yPosition = 20;
-      }
-      doc.text(line, 10, yPosition);
-      yPosition += 9; // Satır aralığını artırdım
-    });
-
-    doc.save("transkript.pdf");
-  };
-
-  const downloadSummaryAsPDF = () => {
-    const doc = new jsPDF();
-
-    // Türkçe karakterler için uygun font ayarları
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-
-    // Başlık - Türkçe karakterleri düzelt
-    const title = "Toplantı Özeti"
-      .replace(/ğ/g, "g")
-      .replace(/Ğ/g, "G")
-      .replace(/ü/g, "u")
-      .replace(/Ü/g, "U")
-      .replace(/ş/g, "s")
-      .replace(/Ş/g, "S")
-      .replace(/ı/g, "i")
-      .replace(/İ/g, "I")
-      .replace(/ö/g, "o")
-      .replace(/Ö/g, "O")
-      .replace(/ç/g, "c")
-      .replace(/Ç/g, "C");
-
-    doc.text(title, 10, 20);
-
-    // İçerik için daha kalın font
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-
-    // Türkçe karakterleri düzgün göstermek için encoding ayarı
-    const turkishText = summary
-      .replace(/ğ/g, "g")
-      .replace(/Ğ/g, "G")
-      .replace(/ü/g, "u")
-      .replace(/Ü/g, "U")
-      .replace(/ş/g, "s")
-      .replace(/Ş/g, "S")
-      .replace(/ı/g, "i")
-      .replace(/İ/g, "I")
-      .replace(/ö/g, "o")
-      .replace(/Ö/g, "O")
-      .replace(/ç/g, "c")
-      .replace(/Ç/g, "C");
-
-    // Metni satırlara böl - Türkçe karakterler için daha geniş alan
-    const lines = doc.splitTextToSize(turkishText, 180);
-
-    // Her satırı ayrı ayrı yaz
-    let yPosition = 35;
-    lines.forEach((line, index) => {
-      if (yPosition > 280) {
-        doc.addPage();
-        yPosition = 20;
-      }
-      doc.text(line, 10, yPosition);
-      yPosition += 9; // Satır aralığını artırdım
-    });
-
-    doc.save("ozet.pdf");
   };
 
   return (
@@ -416,18 +292,10 @@ function App() {
         </div>
       )}
 
-      {/* Durum Mesajı - Daha az dikkat çekici */}
-      <div className="text-sm text-gray-400 font-medium mb-6 text-center">
-        Durum: {status}
-      </div>
+      <StatusMessage status={status}/>
 
-      {isProcessing && (
-        <div className="flex items-center gap-2 mt-4 text-white">
-          <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-purple-600"></div>
-          <span>İşleniyor...</span>
-        </div>
-      )}
-
+      {isProcessing && <ProcessingSpinner />}
+      
       {/* Sonuçlar - Yan Yana Kutular */}
       {(transcript || summary) && (
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 w-full max-w-6xl">
