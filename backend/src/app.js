@@ -3,13 +3,21 @@ const express = require('express');
 const cors = require('cors');
 const audioRoutes = require('./routes/audioRoutes');
 
-const allowedOrigins = ['audio-summarizer-phi.vercel.app'];
-
-const app = express();
-app.use(cors({
-    origin: allowedOrigins,
-    credentials: true
-}));
+const allowedOrigins = [
+    'https://audio-summarizer-phi.vercel.app',
+    'http://localhost:5173' // Geliştirme için
+  ];
+  
+  app.use(cors({
+    origin: function (origin, callback) {
+      // Postman veya curl gibi tools için origin undefined olabilir, onları da kabul et
+      if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('CORS hatası: Bu origin izinli değil!'));
+      }
+    }
+  }));
 app.use(express.json());
 app.use('/api', audioRoutes);
 
