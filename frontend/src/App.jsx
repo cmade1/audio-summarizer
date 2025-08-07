@@ -253,7 +253,7 @@ function App() {
           Ses Özetleyici
         </h1>
         <p className="text-gray-300 text-center mt-2 text-lg">
-          Sesinizi akıllı özetlere dönüştürün
+          
         </p>
       </div>
 
@@ -360,6 +360,18 @@ function App() {
             >
               Özet Çıkar
             </button>
+            <button
+              onClick={() => {
+                setSelectedFile(null);
+                setRecordedAudio(null);
+                setTranscript("");
+                setSummary("");
+                setStatus("Hazır");
+              }}
+              className="mt-3 px-6 py-2 bg-red-600 text-white font-bold rounded-lg disabled:opacity-50 hover:bg-red-700 hover:cursor-pointer transition-all duration-200 shadow-md hover:shadow-lg ml-3"
+            >
+              İptal Et
+            </button>
           </div>
         </div>
       )}
@@ -375,7 +387,19 @@ function App() {
               className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg disabled:opacity-50 hover:bg-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg"
             >
               Özet Çıkar
-        </button>
+            </button>
+            <button
+              onClick={() => {
+                setSelectedFile(null);
+                setRecordedAudio(null);
+                setTranscript("");
+                setSummary("");
+                setStatus("Hazır");
+              }}
+              className="px-6 py-2 bg-red-600 text-white font-bold rounded-lg disabled:opacity-50 hover:bg-red-700 hover:cursor-pointer transition-all duration-200 shadow-md hover:shadow-lg ml-3 mt-3"
+            >
+              İptal Et
+            </button>
           </div>
         </div>
       )}

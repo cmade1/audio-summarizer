@@ -29,7 +29,7 @@ async function splitAudioBySize (inputPath , outputDir , maxSizeMB = 20 ) {
   return new Promise((resolve, reject) => {
     ffmpeg(inputPath)
       .output(path.join(outputDir, 'part-%03d.mp3'))
-      .audioCodec('copy')
+      .audioCodec('libmp3lame')
       .format('mp3')
       .addOption('-f', 'segment')
       .addOption('-segment_time', segmentTime)

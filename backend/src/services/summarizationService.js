@@ -15,7 +15,6 @@ async function summarizeTranscript(transcript) {
     - Notlar
     
     Özetin dili sade, Türkçe ve kurumsal olmalı. Gereksiz tekrarlar çıkarılmalı, konu dışı sohbetler atlanmalı. Kısa ama anlamlı bir çıktı oluşturulmalı.
-    Çıktın markdown formatında olsun.
     Bağlama uygun emojiler kullanılmalı.
         `.trim(); // prompt'un tamamı
     const response = await fetch('https://api.openai.com/v1/chat/completions', {

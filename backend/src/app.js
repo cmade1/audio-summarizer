@@ -4,6 +4,7 @@ const cors = require('cors');
 const audioRoutes = require('./routes/audioRoutes');
 
 const app = express();
+
 const allowedOrigins = [
     'https://audio-summarizer-phi.vercel.app',
     'http://localhost:5173' // Geliştirme için
