@@ -15,7 +15,7 @@ function App() {
   const audioChunksRef = useRef([]);
   const fileInputRef = useRef(null);
 
-  // Zamanlayıcı için useEffect
+  
   useEffect(() => {
     let interval = null;
     if (isRecording) {
@@ -28,7 +28,7 @@ function App() {
     return () => clearInterval(interval);
   }, [isRecording]);
 
-  // Saniyeyi dakika:saniye formatına çevir
+  
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -74,13 +74,16 @@ function App() {
     }
   };
 
-  // Kaydı başlat
   const startRecording = async () => {
+    if (typeof MediaRecorder === "undefined") {
+      setStatus("Bu tarayıcıda ses kaydı desteklenmiyor. Lütfen farklı bir tarayıcı veya cihaz kullanın.");
+      return;
+    }
     setStatus("Mikrofona erişiliyor...");
     try {
-      // Kullanıcıdan mikrofon izni al
+     
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      // MediaRecorder ile sesi kaydet
+      
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: "audio/webm",
       });
@@ -101,12 +104,12 @@ function App() {
       mediaRecorder.onstop = () => {
         setIsRecording(false);
         setStatus("Kayıt durdu");
-        // Kayıt bitince tüm ses parçalarını birleştir
+        
         const audioBlob = new Blob(audioChunksRef.current, {
           type: "audio/webm",
         });
 
-        // Kaydedilen ses dosyasını sakla
+        
         setRecordedAudio(audioBlob);
         setStatus("Kayıt tamamlandı. Özet çıkarmak için tıklayın.");
       };
@@ -118,7 +121,7 @@ function App() {
     }
   };
 
-  // Kaydı durdur
+
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
@@ -129,11 +132,11 @@ function App() {
   const downloadTranscriptAsPDF = () => {
     const doc = new jsPDF();
 
-    // Türkçe karakterler için uygun font ayarları
+    
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
 
-    // Başlık - Türkçe karakterleri düzelt
+
     const title = "Transkript"
       .replace(/ğ/g, "g")
       .replace(/Ğ/g, "G")
@@ -150,11 +153,11 @@ function App() {
 
     doc.text(title, 10, 20);
 
-    // İçerik için daha kalın font
+  
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
 
-    // Türkçe karakterleri düzgün göstermek için encoding ayarı
+ 
     const turkishText = transcript
       .replace(/ğ/g, "g")
       .replace(/Ğ/g, "G")
@@ -169,10 +172,10 @@ function App() {
       .replace(/ç/g, "c")
       .replace(/Ç/g, "C");
 
-    // Metni satırlara böl - Türkçe karakterler için daha geniş alan
+  
     const lines = doc.splitTextToSize(turkishText, 180);
 
-    // Her satırı ayrı ayrı yaz
+    
     let yPosition = 35;
     lines.forEach((line, index) => {
       if (yPosition > 280) {
@@ -180,7 +183,7 @@ function App() {
         yPosition = 20;
       }
       doc.text(line, 10, yPosition);
-      yPosition += 9; // Satır aralığını artırdım
+      yPosition += 9; 
     });
 
     doc.save("transkript.pdf");
@@ -189,11 +192,11 @@ function App() {
   const downloadSummaryAsPDF = () => {
     const doc = new jsPDF();
 
-    // Türkçe karakterler için uygun font ayarları
+    
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
 
-    // Başlık - Türkçe karakterleri düzelt
+    
     const title = "Toplantı Özeti"
       .replace(/ğ/g, "g")
       .replace(/Ğ/g, "G")
@@ -210,11 +213,11 @@ function App() {
 
     doc.text(title, 10, 20);
 
-    // İçerik için daha kalın font
+   
     doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
 
-    // Türkçe karakterleri düzgün göstermek için encoding ayarı
+
     const turkishText = summary
       .replace(/ğ/g, "g")
       .replace(/Ğ/g, "G")
@@ -229,10 +232,10 @@ function App() {
       .replace(/ç/g, "c")
       .replace(/Ç/g, "C");
 
-    // Metni satırlara böl - Türkçe karakterler için daha geniş alan
+    
     const lines = doc.splitTextToSize(turkishText, 180);
 
-    // Her satırı ayrı ayrı yaz
+ 
     let yPosition = 35;
     lines.forEach((line, index) => {
       if (yPosition > 280) {
@@ -240,7 +243,7 @@ function App() {
         yPosition = 20;
       }
       doc.text(line, 10, yPosition);
-      yPosition += 9; // Satır aralığını artırdım
+      yPosition += 9; 
     });
 
     doc.save("ozet.pdf");
@@ -412,7 +415,7 @@ function App() {
         </div>
       )}
 
-      {/* Durum Mesajı - Daha az dikkat çekici */}
+      {/* Durum Mesajı */}
       <div className="text-sm text-gray-400 font-medium mb-6 text-center">
         Durum: {status}
       </div>
