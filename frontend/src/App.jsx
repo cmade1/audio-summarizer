@@ -76,6 +76,10 @@ function App() {
 
   // Kaydı başlat
   const startRecording = async () => {
+    if (typeof MediaRecorder === "undefined") {
+      setStatus("Bu tarayıcıda ses kaydı desteklenmiyor. Lütfen farklı bir tarayıcı veya cihaz kullanın.");
+      return;
+    }
     setStatus("Mikrofona erişiliyor...");
     try {
       // Kullanıcıdan mikrofon izni al
