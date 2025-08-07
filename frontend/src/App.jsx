@@ -36,97 +36,28 @@ function App() {
       .padStart(2, "0")}`;
   };
 
-  // Ses dosyasını backend'e gönder ve işlemleri yap -- eski endpoint
-  // const processAudioFile = async (audioFile) => {
-  //   setIsProcessing(true);
-  //   setStatus("Uploading audio file...");
-  //   setTranscript(""); // Önceki transkripti temizle
-  //   setSummary(""); // Önceki özeti temizle
-
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append("audio", audioFile, "recording.webm");
-
-  //     const response = await fetch("http://localhost:3001/api/upload-audio", {
-  //       method: "POST",
-  //       body: formData,
-  //     });
-
-  //     if (!response.ok) {
-  //       throw new Error("Upload error");
-  //     }
-
-  //     const result = await response.json();
-  //     setStatus(`Audio file uploaded: ${result.filename}`);
-
-  //     // --- BURADA TRANSKRİPSİYON İSTEĞİ ---
-  //     setStatus("Starting transcription...");
-  //     const transcribeRes = await fetch(
-  //       "http://localhost:3001/api/transcribe",
-  //       {
-  //         method: "POST",
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify({ filename: result.filename }),
-  //       }
-  //     );
-
-  //     if (!transcribeRes.ok) {
-  //       throw new Error("Transcription error");
-  //     }
-
-  //     const transcribeData = await transcribeRes.json();
-  //     setTranscript(transcribeData.transcript);
-  //     setStatus("Transcription completed!");
-
-  //     // --- BURADA ÖZETLEME İSTEĞİ ---
-  //     setStatus("Starting summarization...");
-  //     const summarizeRes = await fetch("http://localhost:3001/api/summarize", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ transcript: transcribeData.transcript }),
-  //     });
-
-  //     if (!summarizeRes.ok) {
-  //       throw new Error("Summarization error");
-  //     }
-
-  //     const summarizeData = await summarizeRes.json();
-  //     setSummary(summarizeData.summary);
-  //     setStatus("Process completed!");
-
-  //     // İşlem tamamlandıktan sonra ses dosyalarını temizle
-  //     setSelectedFile(null);
-  //     setRecordedAudio(null);
-  //   } catch (error) {
-  //     console.error("Upload/transcription/summarization error:", error);
-  //     setStatus("Error occurred during processing");
-  //   } finally {
-  //     setIsProcessing(false);
-  //   }
-  // };
-
   const processAudioFile = async (audioFile) => {
     setIsProcessing(true);
     setStatus("Uploading and processing audio file...");
     setTranscript("");
     setSummary("");
-  
+
     try {
       const formData = new FormData();
       formData.append("audio", audioFile, "recording.webm");
-  
+
       // Tek endpoint!
       const response = await fetch("http://localhost:3001/api/process-audio", {
         method: "POST",
         body: formData,
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         setStatus(errorData.error || "Processing error");
         throw new Error(errorData.details || "Processing error");
       }
-  
+
       const result = await response.json();
       setTranscript(result.transcript);
       setSummary(result.summary);
@@ -316,7 +247,7 @@ function App() {
 
   return (
     <div className="min-h-screen min-w-screen flex flex-col items-center justify-center bg-light-dark p-4">
-      {/* Başlık - Daha büyük ve yukarıda */}
+      {/* Başlık */}
       <div className="mb-12 mt-8">
         <h1 className="text-4xl md:text-5xl font-bold text-white text-center">
           Audio Summarizer
@@ -330,8 +261,8 @@ function App() {
       <div className="flex gap-8 mb-8 items-center">
         {/* Start Recording Button */}
         <div className="flex flex-col items-center">
-          <button
-            onClick={startRecording}
+        <button
+          onClick={startRecording}
             disabled={isRecording || isProcessing}
             className="w-16 h-16 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 disabled:cursor-not-allowed hover:cursor-pointer rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl"
           >
@@ -342,7 +273,7 @@ function App() {
             >
               <path d="M8 5v14l11-7z" />
             </svg>
-          </button>
+        </button>
           <span className="text-white text-sm mt-2 font-medium">
             Start Recording
           </span>
@@ -350,8 +281,8 @@ function App() {
 
         {/* Stop Recording Button */}
         <div className="flex flex-col items-center">
-          <button
-            onClick={stopRecording}
+        <button
+          onClick={stopRecording}
             disabled={!isRecording || isProcessing}
             className="w-16 h-16 bg-red-600 hover:bg-red-700 disabled:bg-gray-500 disabled:cursor-not-allowed hover:cursor-pointer rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl"
           >
@@ -378,21 +309,7 @@ function App() {
         </div>
       )}
 
-      {/* Kaydedilen Ses Dosyası için Özet Çıkar Butonu */}
-      {/* {recordedAudio && (
-        <div className="mb-4 text-white flex flex-col items-center justify-center">
-          <p className="text-lg mb-2">Kayıt tamamlandı!</p>
-          <button
-            onClick={() => processAudioFile(recordedAudio)}
-            disabled={isProcessing}
-            className="px-4 py-2 bg-purple-600 text-white font-bold rounded disabled:opacity-50 hover:cursor-pointer hover:bg-purple-700"
-          >
-            Özet Çıkar
-          </button>
-        </div>
-      )} */}
-
-      {/* Dosya Yükleme - Daha sade tasarım */}
+      {/* Dosya Yükleme */}
       <div className="mb-8 mt-4">
         <input
           id="audio-upload"
@@ -458,7 +375,7 @@ function App() {
               className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg disabled:opacity-50 hover:bg-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg"
             >
               Extract Summary
-            </button>
+        </button>
           </div>
         </div>
       )}

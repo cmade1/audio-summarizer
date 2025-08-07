@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const { splitAudioBySize, cleanOldParts } = require('../services/audioService');
+const { splitAudioBySize } = require('../services/audioService');
 const { transcribeAudioParts } = require('../services/transcriptionService');
 const { summarizeTranscript } = require('../services/summarizationService');
 
