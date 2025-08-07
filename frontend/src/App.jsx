@@ -13,6 +13,7 @@ function App() {
   const [recordingTime, setRecordingTime] = useState(0); // Kayıt süresi
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
+  const fileInputRef = useRef(null);
 
   // Zamanlayıcı için useEffect
   useEffect(() => {
@@ -312,6 +313,7 @@ function App() {
       {/* Dosya Yükleme */}
       <div className="mb-8 mt-4">
         <input
+          ref={fileInputRef}
           id="audio-upload"
           type="file"
           accept="audio/webm,audio/mp3,audio/wav,audio/m4a"
@@ -367,6 +369,9 @@ function App() {
                 setTranscript("");
                 setSummary("");
                 setStatus("Hazır");
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = "";
+                }
               }}
               className="mt-3 px-6 py-2 bg-red-600 text-white font-bold rounded-lg disabled:opacity-50 hover:bg-red-700 hover:cursor-pointer transition-all duration-200 shadow-md hover:shadow-lg ml-3"
             >
@@ -395,6 +400,9 @@ function App() {
                 setTranscript("");
                 setSummary("");
                 setStatus("Hazır");
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = "";
+                }
               }}
               className="px-6 py-2 bg-red-600 text-white font-bold rounded-lg disabled:opacity-50 hover:bg-red-700 hover:cursor-pointer transition-all duration-200 shadow-md hover:shadow-lg ml-3 mt-3"
             >
