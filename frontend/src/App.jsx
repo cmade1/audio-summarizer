@@ -74,19 +74,50 @@ function App() {
     }
   };
 
+  // FFmpeg durumunu kontrol et
+  const checkFFmpegStatus = async () => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
+      const response = await fetch(`${apiUrl}/api/ffmpeg-status`);
+      const data = await response.json();
+      console.log("FFmpeg Status:", data);
+      setStatus(
+        `FFmpeg durumu: ${data.ffmpeg.exists ? "Kurulu" : "Kurulu değil"}`
+      );
+    } catch (error) {
+      console.error("FFmpeg status check error:", error);
+      setStatus("FFmpeg durumu kontrol edilemedi");
+    }
+  };
+
   // Kaydı başlat
   const startRecording = async () => {
     if (typeof MediaRecorder === "undefined") {
-      setStatus("Bu tarayıcıda ses kaydı desteklenmiyor. Lütfen farklı bir tarayıcı veya cihaz kullanın.");
+      setStatus(
+        "Bu tarayıcıda ses kaydı desteklenmiyor. Lütfen farklı bir tarayıcı veya cihaz kullanın."
+      );
       return;
     }
     setStatus("Mikrofona erişiliyor...");
     try {
       // Kullanıcıdan mikrofon izni al
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      // Desteklenen formatları kontrol et
+      let mimeType = "audio/webm;codecs=opus";
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = "audio/webm";
+      }
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = "audio/mp4";
+      }
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = "";
+      }
+
       // MediaRecorder ile sesi kaydet
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: "audio/webm",
+        mimeType: mimeType,
       });
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
@@ -107,7 +138,7 @@ function App() {
         setStatus("Kayıt durdu");
         // Kayıt bitince tüm ses parçalarını birleştir
         const audioBlob = new Blob(audioChunksRef.current, {
-          type: "audio/webm",
+          type: mimeType || "audio/webm",
         });
 
         // Kaydedilen ses dosyasını sakla
@@ -257,17 +288,15 @@ function App() {
         <h1 className="text-4xl md:text-5xl font-bold text-white text-center">
           Ses Özetleyici
         </h1>
-        <p className="text-gray-300 text-center mt-2 text-lg">
-          
-        </p>
+        <p className="text-gray-300 text-center mt-2 text-lg"></p>
       </div>
 
       {/* Kayıt Butonları */}
       <div className="flex gap-8 mb-8 items-center">
         {/* Start Recording Button */}
         <div className="flex flex-col items-center">
-        <button
-          onClick={startRecording}
+          <button
+            onClick={startRecording}
             disabled={isRecording || isProcessing}
             className="w-16 h-16 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 disabled:cursor-not-allowed hover:cursor-pointer rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl"
           >
@@ -278,7 +307,7 @@ function App() {
             >
               <path d="M8 5v14l11-7z" />
             </svg>
-        </button>
+          </button>
           <span className="text-white text-sm mt-2 font-medium">
             Kaydı Başlat
           </span>
@@ -286,8 +315,8 @@ function App() {
 
         {/* Stop Recording Button */}
         <div className="flex flex-col items-center">
-        <button
-          onClick={stopRecording}
+          <button
+            onClick={stopRecording}
             disabled={!isRecording || isProcessing}
             className="w-16 h-16 bg-red-600 hover:bg-red-700 disabled:bg-gray-500 disabled:cursor-not-allowed hover:cursor-pointer rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl"
           >
@@ -419,6 +448,16 @@ function App() {
       {/* Durum Mesajı - Daha az dikkat çekici */}
       <div className="text-sm text-gray-400 font-medium mb-6 text-center">
         Durum: {status}
+      </div>
+
+      {/* FFmpeg Durum Kontrolü */}
+      <div className="mb-4 text-center">
+        <button
+          onClick={checkFFmpegStatus}
+          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-all duration-200 text-sm"
+        >
+          FFmpeg Durumunu Kontrol Et
+        </button>
       </div>
 
       {isProcessing && (
