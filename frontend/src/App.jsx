@@ -45,7 +45,18 @@ function App() {
 
     try {
       const formData = new FormData();
-      formData.append("audio", audioFile, "recording.webm");
+
+      // Dosya formatına göre uygun uzantı kullan
+      let fileName = "recording.webm";
+      if (audioFile.type.includes("mp4")) {
+        fileName = "recording.m4a";
+      } else if (audioFile.type.includes("wav")) {
+        fileName = "recording.wav";
+      } else if (audioFile.type.includes("mp3")) {
+        fileName = "recording.mp3";
+      }
+
+      formData.append("audio", audioFile, fileName);
 
       // Tek endpoint!
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
@@ -101,18 +112,36 @@ function App() {
     setStatus("Mikrofona erişiliyor...");
     try {
       // Kullanıcıdan mikrofon izni al
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          sampleRate: 16000,
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+        },
+      });
 
-      // Desteklenen formatları kontrol et
-      let mimeType = "audio/webm;codecs=opus";
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = "audio/webm";
+      // Desteklenen formatları kontrol et - öncelik sırası
+      const formats = [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4",
+        "audio/wav",
+        "audio/ogg;codecs=opus",
+      ];
+
+      let mimeType = "";
+      for (const format of formats) {
+        if (MediaRecorder.isTypeSupported(format)) {
+          mimeType = format;
+          console.log("Selected format:", format);
+          break;
+        }
       }
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = "audio/mp4";
-      }
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = "";
+
+      if (!mimeType) {
+        setStatus("Bu tarayıcıda desteklenen ses formatı bulunamadı");
+        return;
       }
 
       // MediaRecorder ile sesi kaydet
@@ -138,7 +167,12 @@ function App() {
         setStatus("Kayıt durdu");
         // Kayıt bitince tüm ses parçalarını birleştir
         const audioBlob = new Blob(audioChunksRef.current, {
-          type: mimeType || "audio/webm",
+          type: mimeType,
+        });
+
+        console.log("Recorded audio blob:", {
+          size: audioBlob.size,
+          type: audioBlob.type,
         });
 
         // Kaydedilen ses dosyasını sakla
