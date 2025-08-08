@@ -91,7 +91,6 @@ function App() {
       const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
       const response = await fetch(`${apiUrl}/api/ffmpeg-status`);
       const data = await response.json();
-      console.log("FFmpeg Status:", data);
       setStatus(
         `FFmpeg durumu: ${data.ffmpeg.exists ? "Kurulu" : "Kurulu değil"}`
       );
@@ -134,7 +133,6 @@ function App() {
       for (const format of formats) {
         if (MediaRecorder.isTypeSupported(format)) {
           mimeType = format;
-          console.log("Selected format:", format);
           break;
         }
       }
@@ -168,11 +166,6 @@ function App() {
         // Kayıt bitince tüm ses parçalarını birleştir
         const audioBlob = new Blob(audioChunksRef.current, {
           type: mimeType,
-        });
-
-        console.log("Recorded audio blob:", {
-          size: audioBlob.size,
-          type: audioBlob.type,
         });
 
         // Kaydedilen ses dosyasını sakla
@@ -485,6 +478,7 @@ function App() {
       </div>
 
       {/* FFmpeg Durum Kontrolü */}
+      {/* 
       <div className="mb-4 text-center">
         <button
           onClick={checkFFmpegStatus}
@@ -493,6 +487,7 @@ function App() {
           FFmpeg Durumunu Kontrol Et
         </button>
       </div>
+      */}
 
       {isProcessing && (
         <div className="flex items-center gap-2 mt-4 text-white">

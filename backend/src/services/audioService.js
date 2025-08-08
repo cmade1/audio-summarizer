@@ -21,7 +21,6 @@ async function splitAudioBySize (inputPath , outputDir , maxSizeMB = 20 ) {
           console.error('FFprobe error:', err);
           reject(err);
         } else {
-          console.log('Audio metadata:', metadata.format);
           // Duration N/A ise varsayılan değer kullan
           const duration = metadata.format.duration || 60; // 60 saniye varsayılan
           resolve(duration);
@@ -33,17 +32,14 @@ async function splitAudioBySize (inputPath , outputDir , maxSizeMB = 20 ) {
   try {
     const stat = await util.promisify(fs.stat)(inputPath);
     const totalSize = stat.size;
-    console.log('Input file size:', totalSize, 'bytes');
     
     const duration = await getDuration();
-    console.log('Audio duration:', duration, 'seconds');
     
     // Segment time hesaplamasını düzelt
     let segmentTime = 30; // Varsayılan 30 saniye
     if (duration && duration > 0 && totalSize > 0) {
       segmentTime = Math.max(30, Math.min(60, Math.floor(duration * (maxSizeMB * 1024 * 1024) / totalSize)));
     }
-    console.log('Segment time:', segmentTime, 'seconds');
     
     return new Promise((resolve, reject) => {
       // Önce tek bir MP3 dosyasına çevir
@@ -57,12 +53,7 @@ async function splitAudioBySize (inputPath , outputDir , maxSizeMB = 20 ) {
         .addOption('-ar', '16000') // 16kHz
         .addOption('-b:a', '64k') // 64kbps
         .addOption('-y') // Overwrite
-        .on('start', (commandLine) => {
-          console.log('FFmpeg conversion command:', commandLine);
-        })
         .on('end', () => {
-          console.log('Conversion completed, now splitting...');
-          
           // MP3 dosyasını segmentlere böl
           ffmpeg(tempMp3Path)
             .output(path.join(outputDir, 'part-%03d.mp3'))
@@ -70,15 +61,11 @@ async function splitAudioBySize (inputPath , outputDir , maxSizeMB = 20 ) {
             .addOption('-f', 'segment')
             .addOption('-segment_time', segmentTime.toString())
             .addOption('-y')
-            .on('start', (cmdLine) => {
-              console.log('FFmpeg split command:', cmdLine);
-            })
             .on('end', () => {
               // Temp MP3 dosyasını sil
               try {
                 if (fs.existsSync(tempMp3Path)) {
                   fs.unlinkSync(tempMp3Path);
-                  console.log('Deleted temp MP3 file');
                 }
               } catch (err) {
                 console.error('Error deleting temp MP3:', err);
@@ -87,7 +74,6 @@ async function splitAudioBySize (inputPath , outputDir , maxSizeMB = 20 ) {
               const partFiles = fs.readdirSync(outputDir)
                 .filter(f => f.startsWith('part-') && f.endsWith('.mp3'))
                 .map(f => path.join(outputDir, f));
-              console.log('Generated part files:', partFiles);
               resolve(partFiles);
             })
             .on('error', (err) => {
