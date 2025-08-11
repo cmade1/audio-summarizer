@@ -7,6 +7,8 @@ import AudioRecorder from "./components/AudioRecorder"
 import FileUploader from "./components/FileUploader"
 import TranscriptBox from "./components/TranscriptBox"
 import SummaryBox from "./components/SummaryBox"
+//import DragNdrop from "./components/DragNdrop"    
+import DragAndDrop from "./components/DragAndDrop"
 
 function App() {
   const [isRecording, setIsRecording] = useState(false);
@@ -182,7 +184,10 @@ function App() {
       <StatusMessage status={status}/>
 
       {isProcessing && <ProcessingSpinner />}
-      
+
+      {/* <DragNdrop onFilesSelected={setSelectedFile}  /> */}
+      <DragAndDrop isProcessing={isProcessing} setStatus={setStatus} processAudioFile={processAudioFile} fileInputRef={fileInputRef} selectedFile={selectedFile} setSelectedFile={setSelectedFile} setRecordedAudio={setRecordedAudio} setTranscript={setTranscript} setSummary={setSummary} />
+
       {/* Sonuç kutuları */}
       {(transcript || summary) && (
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 w-full max-w-6xl">
