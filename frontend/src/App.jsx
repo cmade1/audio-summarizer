@@ -140,6 +140,8 @@ function App() {
         </p>
       </div>
 
+      {/* Kayıt Alma */}
+
       <AudioRecorder isRecording={isRecording} isProcessing={isProcessing} recordingTime={formatTime(recordingTime)} startRecording = {startRecording} stopRecording = {stopRecording} />
       
 
@@ -200,13 +202,10 @@ function App() {
           </div>
         </div>
       )}
-
+      {/* Durum Mesajı */}
       <StatusMessage status={status}/>
 
       {isProcessing && <ProcessingSpinner />}
-
-      {/* <DragNdrop onFilesSelected={setSelectedFile}  /> */}
-
 
       {/* Sonuç kutuları */}
       {(transcript || summary) && (
