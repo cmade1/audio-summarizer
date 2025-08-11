@@ -1,15 +1,16 @@
-import React, { useState } from "react";
-import { useRef } from "react";
+import { useState , useRef } from "react";
 
 
-function DragAndDrop( {fileInputRef , selectedFile , setSelectedFile , setRecordedAudio , setTranscript , setSummary , processAudioFile , isProcessing , setStatus }) {
-  const [files, setFiles] = useState([]);
+function DragAndDrop( { setSelectedFile , setRecordedAudio , setTranscript , setSummary ,  isProcessing , setStatus }) {
+
   const [isDragging, setIsDragging] = useState(false);
+  const dropRef = useRef(null);
 
   const handleDragEnter = (e) => {
     e.preventDefault();
     setIsDragging(true);
   };
+
   const handleDragLeave = (e) => {
     e.preventDefault();
     setIsDragging(false);
@@ -17,83 +18,50 @@ function DragAndDrop( {fileInputRef , selectedFile , setSelectedFile , setRecord
 
   const handleDrop = (e) => {
     e.preventDefault();
-    const droppedFiles = Array.from(e.dataTransfer.files);
-    setFiles(droppedFiles);
+    if (isProcessing) {
+      setStatus("İşlem devam ediyor, lütfen bekleyin.");
+      return;
+    }
+
+    const files = e.dataTransfer.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    if (!file.type.startsWith("audio/")) {
+      setStatus("Lütfen bir ses dosyası bırakın.");
+      return;
+    }
+
+    setSelectedFile(file);
+    setRecordedAudio(null);
+    setTranscript("");
+    setSummary("");
+    setStatus("Ses dosyası bırakıldı, işleniyor...");
   };
 
   const handleDragOver = (e) => {
     e.preventDefault();
-  };
-
-  const uploadFiles = async () => {
-    const formData = new FormData();
-    files.forEach(file => formData.append("files", file));
-  
-    const res = await fetch(`${apiUrl}/api/process-audio`, {
-      method: "POST",
-      body: formData,
-    });
-  
-    if (res.ok) {
-      alert("Upload successful!");
-    } else {
-      alert("Upload failed.");
-    }
+    setIsDragging(true);
   };
 
   return (
-    <>
-    {/* <div
-     onDrop={handleDrop}
-     onDragOver={handleDragOver}
-     onDragEnter={handleDragEnter}
-     onDragLeave={handleDragLeave}
-     style={{
-     border: "2px dashed #ccc",
-     padding: "20px",
-     textAlign: "center",
-     borderRadius: "10px",
-     backgroundColor: isDragging ? "#f0f8ff" : "#fff",
-     }}></div> */}
+    
     <div
-      onDrop={handleDrop}
+      ref={dropRef}
       onDragOver={handleDragOver}
-      className="border-2 p-4 text-center rounded-lg"
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={`w-full max-w-lg h-32 flex items-center justify-center border-2 border-dashed rounded-lg transition-all duration-200 mb-6 ${
+        isDragging ? "border-indigo-500 bg-indigo-950/40" : "border-gray-400 bg-gray-800/40"
+      }`}
+      style={{ cursor: isProcessing ? "not-allowed" : "default" }}
     >
-      <p className="text-gray-500">Drag and drop files here</p>
-      <ul>
-        {files.map((file, index) => (
-          <li key={index}>{file.name}</li>
-        ))}
-      </ul>
-        <div className="mb-8 mt-4">
-          <input
-            ref={fileInputRef}
-            id="audio-upload"
-            type="file"
-            accept="audio/webm,audio/mp3,audio/wav,audio/m4a"
-            onChange={(e) => {
-                if (e.target.files[0]) {
-                setSelectedFile(e.target.files[0]);
-                setRecordedAudio(null); // Kaydedilen sesi temizle
-                setTranscript(""); // Önceki transkripti temizle
-                setSummary(""); // Önceki özeti temizle
-                }
-            }}
-            className="hidden"
-            />
-            <label
-            htmlFor="audio-upload"
-            className="inline-flex items-center justify-center px-8 py-4 bg-indigo-600 text-white font-semibold rounded-lg cursor-pointer hover:bg-indigo-700 hover:cursor-pointer transition-all duration-200 shadow-md hover:shadow-lg mt-4"
-            >
-              <button onClick={uploadFiles}>Upload Files</button>
-            </label>
-        </div>
-        {selectedFile && (
-                <></>
-            )}
+      {isProcessing
+        ? "İşlem devam ediyor..."
+        : "Ses dosyanızı buraya sürükleyip bırakın"}
     </div>
-    </>
+    
+    
   );
 }
 

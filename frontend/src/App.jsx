@@ -6,8 +6,7 @@ import ProcessingSpinner from "./components/ProcessingSpinner"
 import AudioRecorder from "./components/AudioRecorder"
 import FileUploader from "./components/FileUploader"
 import TranscriptBox from "./components/TranscriptBox"
-import SummaryBox from "./components/SummaryBox"
-//import DragNdrop from "./components/DragNdrop"    
+import SummaryBox from "./components/SummaryBox"    
 import DragAndDrop from "./components/DragAndDrop"
 
 function App() {
@@ -145,9 +144,30 @@ function App() {
       
 
       {/* Dosya Yükleme */}
+      
+      <FileUploader 
+        processAudioFile={processAudioFile} 
+        fileInputRef={fileInputRef} 
+        selectedFile={selectedFile} 
+        isProcessing={isProcessing} 
+        setSelectedFile={setSelectedFile}
+        setRecordedAudio={setRecordedAudio} 
+        setTranscript={setTranscript} 
+        setSummary={setSummary} 
+        setStatus={setStatus} 
+      />
 
-      <FileUploader processAudioFile={processAudioFile} fileInputRef={fileInputRef} selectedFile={selectedFile} isProcessing={isProcessing} setSelectedFile={setSelectedFile} setRecordedAudio={setRecordedAudio} setTranscript={setTranscript} setSummary={setSummary} setStatus={setStatus} />
-
+      <DragAndDrop 
+        isProcessing={isProcessing} 
+        setStatus={setStatus} 
+        processAudioFile={processAudioFile} 
+        fileInputRef={fileInputRef} 
+        selectedFile={selectedFile} 
+        setSelectedFile={setSelectedFile} 
+        setRecordedAudio={setRecordedAudio} 
+        setTranscript={setTranscript} 
+        setSummary={setSummary} 
+      />
 
 
       {/* Kaydedilen Ses Dosyası için Özet Çıkar Butonu */}
@@ -186,7 +206,7 @@ function App() {
       {isProcessing && <ProcessingSpinner />}
 
       {/* <DragNdrop onFilesSelected={setSelectedFile}  /> */}
-      <DragAndDrop isProcessing={isProcessing} setStatus={setStatus} processAudioFile={processAudioFile} fileInputRef={fileInputRef} selectedFile={selectedFile} setSelectedFile={setSelectedFile} setRecordedAudio={setRecordedAudio} setTranscript={setTranscript} setSummary={setSummary} />
+
 
       {/* Sonuç kutuları */}
       {(transcript || summary) && (
