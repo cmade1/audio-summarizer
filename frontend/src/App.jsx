@@ -1,5 +1,4 @@
 import { useRef, useState, useEffect } from "react";
-import { formatTime } from "./utils/formatTime";
 import {
   downloadTranscriptAsPDF,
   downloadSummaryAsPDF,
@@ -94,6 +93,7 @@ function App() {
     setStatus("Mikrofona erişiliyor...");
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = "audio/webm";
 
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: mimeType,
@@ -139,7 +139,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen min-w-screen flex flex-col items-center justify-center bg-light-dark p-4">
+    <div className="min-h-screen min-w-screen flex flex-col items-center justify-center p-4">
       <div className="mb-12 mt-8">
         <h1 className="text-4xl md:text-5xl font-bold text-white text-center">
           Ses Özetleyici
@@ -152,7 +152,7 @@ function App() {
       <AudioRecorder
         isRecording={isRecording}
         isProcessing={isProcessing}
-        recordingTime={formatTime(recordingTime)}
+        recordingTime={recordingTime}
         startRecording={startRecording}
         stopRecording={stopRecording}
       />
@@ -191,7 +191,7 @@ function App() {
             <button
               onClick={() => processAudioFile(recordedAudio)}
               disabled={isProcessing}
-              className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg disabled:opacity-50 hover:bg-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg"
+              className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-lg disabled:opacity-50 hover:bg-indigo-700 hover:cursor-pointer transition-all duration-200 shadow-md hover:shadow-lg"
             >
               Özet Çıkar
             </button>
