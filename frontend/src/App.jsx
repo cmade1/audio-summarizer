@@ -115,12 +115,11 @@ function App() {
       mediaRecorder.onstop = () => {
         setIsRecording(false);
         setStatus("Kayıt durdu");
-        // Kayıt bitince tüm ses parçalarını birleştir
+
         const audioBlob = new Blob(audioChunksRef.current, {
           type: mimeType,
         });
 
-        // Kaydedilen ses dosyasını sakla
         setRecordedAudio(audioBlob);
         setStatus("Kayıt tamamlandı. Özet çıkarmak için tıklayın.");
       };
