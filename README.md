@@ -1,4 +1,4 @@
-# Ses Özetleyici (Audio Summarizer)
+# Audio Summarizer (Ses Özetleyici)
 
 [![Live Project](https://img.shields.io/badge/Live%20Project-View%20App-blue?style=for-the-badge&logo=vercel)](https://audio-summarizer-phi.vercel.app/)
 
@@ -78,9 +78,8 @@ npm run dev
 
 ### Backend (Node.js + Express)
 - **Teknoloji Stack**: Node.js, Express, FFmpeg, OpenAI API
-- **Mimari**: MVC pattern ile modüler yapı
 - **Ana Servisler**:
-  - `audioService.js`: Ses dosyası işleme ve bölme
+  - `audioService.js`: Ses dosyası işleme ve bölme (API 20mb'dan büyük dosyaları kabul etmediği için dosya bölme işlemi)
   - `transcriptionService.js`: OpenAI Whisper API entegrasyonu
   - `summarizationService.js`: OpenAI GPT-4 özetleme
 
@@ -106,12 +105,6 @@ GET /api/test
 - Backend sağlık kontrolü
 ```
 
-### Güvenlik ve Performans
-
-- **CORS**: Sadece izinli origin'ler (production + development)
-- **Dosya Temizleme**: İşlem sonrası otomatik dosya silme
-- **Hata Yönetimi**: Kapsamlı error handling ve retry mekanizması
-- **Timeout**: 60 saniye maksimum işlem süresi
 
 
 ## 📁 Dosya Yapısı
@@ -154,10 +147,10 @@ audio-summarizer/
 **`controllers/audioController.js` - Ana İşlem Controller'ı:**
 ```javascript
 async function processAudio(req, res) {
-  try {
-    // 1. Dosya kontrolü
+    try {
+        // 1. Dosya kontrolü
     if (!req.file) {
-      return res.status(400).json({ error: 'Ses dosyası bulunamadı' });
+        return res.status(400).json({ error: 'Ses dosyası bulunamadı' });
     }
     
     // 2. Ses dosyasını böl (20MB limit için)
@@ -171,12 +164,12 @@ async function processAudio(req, res) {
     
     // 5. Geçici dosyaları temizle
     partPaths.forEach(f => {
-      if (fs.existsSync(f)) fs.unlinkSync(f);
+        if (fs.existsSync(f)) fs.unlinkSync(f);
     });
     
     res.json({ transcript: fullTranscript, summary });
   } catch (error) {
-    // Hata yönetimi
+      // Hata yönetimi
   }
 }
 ```
@@ -186,13 +179,13 @@ async function processAudio(req, res) {
 **`services/audioService.js` - FFmpeg ile Ses Bölme:**
 ```javascript
 async function splitAudioBySize(inputPath, outputDir, maxSizeMB = 20) {
-  // 1. Dosya süresini al
+    // 1. Dosya süresini al
   const duration = await getDuration();
   
   // 2. Segment süresini hesapla (30-60 saniye arası)
   let segmentTime = 30;
   if (duration && totalSize > 0) {
-    segmentTime = Math.max(30, Math.min(60, 
+      segmentTime = Math.max(30, Math.min(60, 
       Math.floor(duration * (maxSizeMB * 1024 * 1024) / totalSize)));
   }
   
@@ -217,17 +210,17 @@ async function splitAudioBySize(inputPath, outputDir, maxSizeMB = 20) {
 **`services/transcriptionService.js` - Whisper API:**
 ```javascript
 async function transcribeAudioParts(partPaths) {
-  const transcripts = await Promise.all(
-    partPaths.map(async (partPath) => {
-      const formData = new FormData();
+    const transcripts = await Promise.all(
+        partPaths.map(async (partPath) => {
+            const formData = new FormData();
       formData.append('file', fs.createReadStream(partPath));
       formData.append('model', 'whisper-1');
       formData.append('language', 'tr'); // Türkçe
       
       const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-        method: 'POST',
+          method: 'POST',
         headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
           ...formData.getHeaders()
         },
         body: formData,
@@ -245,7 +238,7 @@ async function transcribeAudioParts(partPaths) {
 **`services/summarizationService.js` - GPT-4 Özetleme:**
 ```javascript
 async function summarizeTranscript(transcript) {
-  const systemPrompt = `
+    const systemPrompt = `
     Aşağıda bir toplantının yazıya dökülmüş hali verilecek. Bu metni temel alarak toplantının özetini oluştur.
     Lütfen şu yapıya sadık kal:
     - Toplantı Başlığı
@@ -256,15 +249,15 @@ async function summarizeTranscript(transcript) {
   `.trim();
   
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
+      method: 'POST',
     headers: {
-      'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      model: 'gpt-4o',
+        model: 'gpt-4o',
       messages: [
-        { role: 'system', content: systemPrompt },
+          { role: 'system', content: systemPrompt },
         { role: 'user', content: transcript }
       ],
       temperature: 0.5
@@ -288,12 +281,12 @@ const [isProcessing, setIsProcessing] = useState(false);
 
 // Ses işleme fonksiyonu
 const processAudioFile = async (audioFile) => {
-  setIsProcessing(true);
+    setIsProcessing(true);
   const formData = new FormData();
   formData.append("audio", audioFile, fileName);
   
   const response = await fetch(`${apiUrl}/api/process-audio`, {
-    method: "POST",
+      method: "POST",
     body: formData,
   });
   
@@ -375,3 +368,10 @@ Bu proje, modern web teknolojileri kullanarak ses işleme ve AI entegrasyonu sa�
 - Dosya tipi kontrolü (sadece audio/*)
 - Otomatik dosya temizleme
 - Hata mesajlarında detay gizleme
+
+### Güvenlik ve Performans
+      
+- **CORS**: Sadece izinli origin'ler (production + development)
+- **Dosya Temizleme**: İşlem sonrası otomatik dosya silme
+- **Hata Yönetimi**: Kapsamlı error handling ve retry mekanizması
+- **Timeout**: 60 saniye maksimum işlem süresi
