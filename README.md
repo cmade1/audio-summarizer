@@ -296,24 +296,6 @@ const processAudioFile = async (audioFile) => {
   setIsProcessing(false);
 };
 ```
-## 🛠️ Özellikler
-
-### Frontend
-- ✅ Tarayıcı tabanlı ses kaydı
-- ✅ Drag & drop dosya yükleme
-- ✅ Gerçek zamanlı kayıt süresi
-- ✅ İşlem durumu göstergeleri
-- ✅ PDF indirme (transkript/özet)
-- ✅ Responsive tasarım
-- ✅ Türkçe karakter desteği
-
-### Backend
-- ✅ Çoklu ses formatı desteği
-- ✅ Otomatik dosya bölme
-- ✅ Retry mekanizması
-- ✅ Hata yönetimi
-- ✅ Dosya temizleme
-- ✅ CORS güvenliği
 
 ## 🚀 Deployment
 
@@ -369,9 +351,21 @@ Bu proje, modern web teknolojileri kullanarak ses işleme ve AI entegrasyonu sa�
 - Otomatik dosya temizleme
 - Hata mesajlarında detay gizleme
 
-### Güvenlik ve Performans
-      
-- **CORS**: Sadece izinli origin'ler (production + development)
-- **Dosya Temizleme**: İşlem sonrası otomatik dosya silme
-- **Hata Yönetimi**: Kapsamlı error handling ve retry mekanizması
-- **Timeout**: 60 saniye maksimum işlem süresi
+## 🛠️ Özellikler
+
+### Frontend
+- ✅ Tarayıcı tabanlı ses kaydı
+- ✅ Drag & drop dosya yükleme
+- ✅ Gerçek zamanlı kayıt süresi
+- ✅ İşlem durumu göstergeleri
+- ✅ PDF indirme (transkript/özet)
+- ✅ Responsive tasarım
+- ✅ Türkçe karakter desteği
+
+### Backend
+- ✅ Çoklu ses formatı desteği
+- ✅ Otomatik dosya bölme
+- ✅ Retry mekanizması
+- ✅ Hata yönetimi
+- ✅ Dosya temizleme
+- ✅ CORS güvenliği
