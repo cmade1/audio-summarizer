@@ -13,12 +13,12 @@ async function processAudio(req, res) {
     const inputPath = req.file.path;
     const outputDir = path.join(__dirname, '../../uploads');
     
-    // Uploads dizininin var olduğundan emin ol
+    
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
     
-    // Dosyanın var olduğunu kontrol et
+    
     if (!fs.existsSync(inputPath)) {
       return res.status(400).json({ error: 'Yüklenen dosya bulunamadı' });
     }
@@ -27,7 +27,7 @@ async function processAudio(req, res) {
     const fullTranscript = await transcribeAudioParts(partPaths);
     const summary = await summarizeTranscript(fullTranscript);
     
-    // Temizlik
+    
     partPaths.forEach(f => {
       try {
         if (fs.existsSync(f)) {
@@ -38,7 +38,7 @@ async function processAudio(req, res) {
       }
     });
     
-    // Orijinal dosyayı da sil
+    
     try {
       if (fs.existsSync(inputPath)) {
         fs.unlinkSync(inputPath);
@@ -51,7 +51,7 @@ async function processAudio(req, res) {
   } catch (error) {
     console.error('İşlem hatası:', error);
     
-    // Daha spesifik hata mesajları
+    
     let errorMessage = 'İşlem hatası';
     if (error.message.includes('FFmpeg')) {
       errorMessage = 'Ses dosyası işleme hatası - FFmpeg sorunu';

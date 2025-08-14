@@ -21,8 +21,8 @@ async function splitAudioBySize (inputPath , outputDir , maxSizeMB = 20 ) {
           console.error('FFprobe error:', err);
           reject(err);
         } else {
-          // Duration N/A ise varsayılan değer kullan
-          const duration = metadata.format.duration || 60; // 60 saniye varsayılan
+          
+          const duration = metadata.format.duration || 60; 
           resolve(duration);
         }
       });
@@ -35,14 +35,14 @@ async function splitAudioBySize (inputPath , outputDir , maxSizeMB = 20 ) {
     
     const duration = await getDuration();
     
-    // Segment time hesaplamasını düzelt
-    let segmentTime = 30; // Varsayılan 30 saniye
+    
+    let segmentTime = 30; 
     if (duration && duration > 0 && totalSize > 0) {
       segmentTime = Math.max(30, Math.min(60, Math.floor(duration * (maxSizeMB * 1024 * 1024) / totalSize)));
     }
     
     return new Promise((resolve, reject) => {
-      // Önce tek bir MP3 dosyasına çevir
+      
       const tempMp3Path = path.join(outputDir, 'temp.mp3');
       
       ffmpeg(inputPath)
